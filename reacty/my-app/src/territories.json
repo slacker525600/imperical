@@ -1,0 +1,12 @@
+{
+    "territories":[
+        {
+            "name": "moscow",
+            "connections": [
+                ""
+            ],
+            "water": false,
+            "supports": "factory"
+        }
+    ]
+}
