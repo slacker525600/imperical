@@ -68,14 +68,25 @@ class Player {
 
 
 class baseGame {
+/* phases of game, 
+bid by country 
+take actions based on same order, 
+
+to implement later 
+blind bidding cutover? 
+*/
+
     constructor(options){
         this.players = options.playerNames.map((name) => 
             new Player(name,startingMoney[options.playerNames.length])
             );
         this.options = options;
         this.countries = countryList.map((name) => new Country(name));
+        this.turn = 0;
         this.actingCountryIndex = 0;
+        this.bidding = true;
     }
+
     getCountryScores(player) {
         let total = 0;
         // do I feel better if the reduce is a filter and a sum?
@@ -125,10 +136,35 @@ class baseGame {
         return this.actingCountry().getAvailableActions().contains(action)
     }
 
+    handleBiddingAction(player, action){
+        // action can be buy or pass 
+        // player must be next in list 
+        turn = turn % this.players.length;
+        if (! ['buy', 'pass'].contains(action.name)){
+            return "Not a valid action for this phase of the game";
+        } else if (player != this.players[turn]){
+            return "not your turn to bid";
+        } else if (action.share.cost > this.players[turn].money) {
+            return "Not enough money to buy selected share";
+        } else if (!this.actingCountry().shares.contains(action.share.value)){
+            return "This share has already been purchased";
+        }
+        this.turn++;
+
+        if(action.name == 'buy'){
+            this.players[turn].money -= action.share.cost;
+            this.players[turn].shares.append(
+                this.actingCountry().shares.remove(action.share.value))
+        }
+        return undefined;
+    }
+
     isValidRequest(player, action){
-        // should swiss bank stop? happen here? 
-        if(player != nextActor().getController())
-          return "Player is not controller for active country";
+        if (this.bidding){
+            return this.handleBiddingAction(player,action);
+        } else if(player != nextActor().getController())
+            // should swiss bank stop? happen here? 
+            return "Player is not controller for active country";
         // else if (isValidAction(action))
         //   return "Not a legal move"
         return undefined;
@@ -153,6 +189,7 @@ const options = {
 
 };
 /*
+// old method 'running game' from cli 
 var game = new baseGame( options);
 console.log(`starting game ${JSON.stringify(game)}`);
 // broadcast feature to ui, ? 
