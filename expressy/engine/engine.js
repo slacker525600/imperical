@@ -1,3 +1,22 @@
+const countryList =["russia",
+    "china",
+    "india",
+    "america",
+    "brazil",
+    "europe",
+];
+// not sure about this ... could go really abstract and make it the function to call for the country action
+const rondel = ['tax','factory','produce','manuver','invest','import','produce','manuver'];
+const unwritten = {
+    "board": {
+        "map" : {"spaces" : [""], "links":[{"to":"","from":""}]},
+        "scores": {}
+    },
+    "players": [],
+};
+const startingMoney = [0,0,30,20,15,12,12]
+
+
 class Share {
     constructor(stake){
         this.owner = 'c'; // options.playernames[0] ?
@@ -11,10 +30,7 @@ class Country {
         this.name = name;
         this.rondelLoc = null;
         this.scoreTrack = 0;
-        this.rondelLoc = null;
-        var vals = [1,2,3,4,5]; // whats the js shorthand for 1:9
-        // this will need to be updated to 1-9 forget all the values though
-        this.shares = vals.map((val) => new Share(val));
+        this.shares = Range(9).map((val) => new Share(val+1));
     }
 
     getOwners(){
@@ -37,9 +53,12 @@ class Country {
 
         // send present owner options, wait for owner input.
     };
+
+    getAvailableActions(){
+
+    }
 }
 // could make this less interesting
-const startingMoney = [0,0,30,20,15,12,12]
 class Player {
     constructor(name, startingMoney){
         this.name = name;
@@ -47,22 +66,6 @@ class Player {
     }
 }
 
-const countryList =["russia",
-    "china",
-    "india",
-    "america",
-    "brazil",
-    "europe",
-];
-// not sure about this ... could go really abstract and make it the function to call for the country action
-const rondel = ['tax','factory','produce','manuver','invest','import','produce','manuver'];
-const unwritten = {
-    "board": {
-        "map" : {"spaces" : [""], "links":[{"to":"","from":""}]},
-        "scores": {}
-    },
-    "players": [],
-};
 
 class baseGame {
     constructor(options){
@@ -106,20 +109,30 @@ class baseGame {
     };
 
     isOver() {
-        // only need to check the 
-        // this.actingCountryIndex
-        // for (var i = 0; i < this.countries.length; i++){
-            var country = this.actingCountry();
-            // console.log(country);
-            if (country.scoreTrack >= 25) {
-                console.log('game over');
-                return true;
-            }
-            //console.log(`increasing score for ${JSON.stringify(country)}`)
-             country.scoreTrack ++;
-        // }
+        var country = this.actingCountry();
+        // console.log(country);
+        if (country.scoreTrack >= 25) {
+            console.log('game over');
+            return true;
+        }
+        // this is a placeholder to actually calculating score. 
+        // was just trying to make sure game ends eventually
+        country.scoreTrack ++;
         return false;
     };
+
+    isValidAction(action){
+        return this.actingCountry().getAvailableActions().contains(action)
+    }
+
+    isValidRequest(player, action){
+        // should swiss bank stop? happen here? 
+        if(player != nextActor().getController())
+          return "Player is not controller for active country";
+        // else if (isValidAction(action))
+        //   return "Not a legal move"
+        return undefined;
+    }
 
 };
 
