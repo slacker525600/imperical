@@ -19,10 +19,12 @@ const startingMoney = [0,0,30,20,15,12,12]
 
 class Share {
     constructor(stake){
-        this.owner = 'c'; // options.playernames[0] ?
+        this.owner = undefined;
         this.stake=stake;
     }
-
+    setOwner(owner){
+        this.owner = owner;
+    }
 }
 
 class Country {
@@ -30,11 +32,10 @@ class Country {
         this.name = name;
         this.rondelLoc = null;
         this.scoreTrack = 0;
-        this.shares = Range(9).map((val) => new Share(val+1));
+        this.shares = [...Array(9).keys()].map((val) => new Share(val+1));
     }
 
     getOwners(){
-        // cached? why loop when could save on incremental updates
         const owners = {};
 
         var sorted = [];
@@ -48,6 +49,7 @@ class Country {
         return Object.keys(getOwners())[0];
     }
 
+    // not all actions are countries, also need to handle buys, 
     act(){
         // find owner,
 
@@ -63,13 +65,14 @@ class Player {
     constructor(name, startingMoney){
         this.name = name;
         this.money = startingMoney;
+        this.shares = [];
     }
 }
 
 
 class baseGame {
 /* phases of game, 
-bid by country 
+buy shares by country (this is a long running abstraction of investor)
 take actions based on same order, 
 
 to implement later 
@@ -84,7 +87,7 @@ blind bidding cutover?
         this.countries = countryList.map((name) => new Country(name));
         this.turn = 0;
         this.actingCountryIndex = 0;
-        this.bidding = true;
+        this.buyPhase = true;
     }
 
     getCountryScores(player) {
@@ -111,8 +114,12 @@ blind bidding cutover?
     };
     
     nextActor() {
-        this.actingCountryIndex++;
-        return this.actingCountry();
+        if (buyPhase){
+            return this.buyingPlayer();
+        } else {
+            this.actingCountryIndex++;
+            return this.actingCountry();    
+        }
     };
 
     actingCountry() {
@@ -137,19 +144,11 @@ blind bidding cutover?
     }
 
     handleBiddingAction(player, action){
+        // route should verify action is valid before calling
         // action can be buy or pass 
         // player must be next in list 
-        turn = turn % this.players.length;
-        if (! ['buy', 'pass'].contains(action.name)){
-            return "Not a valid action for this phase of the game";
-        } else if (player != this.players[turn]){
-            return "not your turn to bid";
-        } else if (action.share.cost > this.players[turn].money) {
-            return "Not enough money to buy selected share";
-        } else if (!this.actingCountry().shares.contains(action.share.value)){
-            return "This share has already been purchased";
-        }
         this.turn++;
+        const turn = this.turn % this.players.length;
 
         if(action.name == 'buy'){
             this.players[turn].money -= action.share.cost;
@@ -160,13 +159,24 @@ blind bidding cutover?
     }
 
     isValidRequest(player, action){
-        if (this.bidding){
-            return this.handleBiddingAction(player,action);
+        if (this.buyPhase){
+            if (! ['buy', 'pass'].contains(action.name)){
+                return "Not a valid action for this phase of the game";
+            } else if (player != this.players[turn]){
+                return "Player requesting action not your turn to bid";
+            } else if (action.share.cost > this.players[turn].money) {
+                return "Not enough money to buy selected share";
+            } else if (!this.actingCountry().shares.contains(action.share.value)){
+                return "This share has already been purchased";
+            }
         } else if(player != nextActor().getController())
             // should swiss bank stop? happen here? 
+            // if country passing invest and has money next actor is swiss bank array ordered by 
+            // 
             return "Player is not controller for active country";
         // else if (isValidAction(action))
         //   return "Not a legal move"
+        // check details of action. 
         return undefined;
     }
 
