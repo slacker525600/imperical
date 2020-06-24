@@ -1,20 +1,45 @@
-const countryList =["russia",
-    "china",
-    "india",
-    "america",
-    "brazil",
-    "europe",
+const countryList =[
+    'russia',
+    'china',
+    'india',
+    'america',
+    'brazil',
+    'europe',
 ];
-// not sure about this ... could go really abstract and make it the function to call for the country action
-const rondel = ['tax','factory','produce','manuver','invest','import','produce','manuver'];
+
+const rondel = [
+    'tax',
+    'factory',
+    'produce',
+    'manuver',
+    'invest',
+    'import',
+    'produce',
+    'manuver'
+];
+
+const buyPhaseActions = [
+    'buy', 
+    'pass'
+];
+
 const unwritten = {
-    "board": {
-        "map" : {"spaces" : [""], "links":[{"to":"","from":""}]},
-        "scores": {}
+    'board': {
+        'map' : {'spaces' : [''], 'links':[{'to':'','from':''}]},
+        'scores': {}
     },
-    "players": [],
+    'players': [],
 };
-const startingMoney = [0,0,30,20,15,12,12]
+
+const startingMoney = [
+    0, // 0 player game not playable
+    0, // 1 player game not playable
+    30,
+    20,
+    15,
+    12,
+    12
+];
 
 
 class Share {
@@ -45,11 +70,10 @@ class Country {
         sorted.sort();
     };
 
-    getController(){
+    getControlingPlayer(){
         return Object.keys(getOwners())[0];
     }
 
-    // not all actions are countries, also need to handle buys, 
     act(){
         // find owner,
 
@@ -71,14 +95,6 @@ class Player {
 
 
 class baseGame {
-/* phases of game, 
-buy shares by country (this is a long running abstraction of investor)
-take actions based on same order, 
-
-to implement later 
-blind bidding cutover? 
-*/
-
     constructor(options){
         this.players = options.playerNames.map((name) => 
             new Player(name,startingMoney[options.playerNames.length])
@@ -118,9 +134,14 @@ blind bidding cutover?
             return this.buyingPlayer();
         } else {
             this.actingCountryIndex++;
-            return this.actingCountry();    
+            return this.actingCountry().getControlingPlayer();    
         }
     };
+
+    buyingPlayer(){
+        const playerIndex = turn % this.players.length + this.actingCountryIndex;
+        return players[playerIndex]; 
+    }
 
     actingCountry() {
         return this.countries[this.actingCountryIndex % this.countries.length];
@@ -159,24 +180,26 @@ blind bidding cutover?
     }
 
     isValidRequest(player, action){
-        if (this.buyPhase){
-            if (! ['buy', 'pass'].contains(action.name)){
+        if(player != this.nextActor()) {
+            // should swiss bank stop? happen here? 
+            // if country passing invest and has money next actor is swiss bank array ordered by 
+            return "Player is not in control";
+        } else if (this.buyPhase){
+            if (! buyPhaseActions.contains(action.name)){
                 return "Not a valid action for this phase of the game";
-            } else if (player != this.players[turn]){
-                return "Player requesting action not your turn to bid";
+            } else if (player != this.buyingPlayer()){
+                return "Player requesting action not your turn to buy";
             } else if (action.share.cost > this.players[turn].money) {
                 return "Not enough money to buy selected share";
             } else if (!this.actingCountry().shares.contains(action.share.value)){
                 return "This share has already been purchased";
             }
-        } else if(player != nextActor().getController())
-            // should swiss bank stop? happen here? 
-            // if country passing invest and has money next actor is swiss bank array ordered by 
-            // 
-            return "Player is not controller for active country";
-        // else if (isValidAction(action))
-        //   return "Not a legal move"
-        // check details of action. 
+        } else {
+            // else if (isValidAction(action))
+            //   return "Not a legal move"
+            // check details of action. 
+            return 'Not yet implemented, ie finish buy phase first chris';
+        } 
         return undefined;
     }
 

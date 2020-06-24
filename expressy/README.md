@@ -25,3 +25,9 @@ a player tells the game what actions they want to take
 creating a game requires:
   rules  // we'll bake this into the game 
   players
+
+after a few googles ... thinking of upgrading to use 
+https://github.com/boardgameio/boardgame.io/blob/master/package.json 
+think most of the 'logic ' implemented to date will port right in, 
+defaults to react dom logic, so frontend should slide into same idea 
+get a lot for free woo 
